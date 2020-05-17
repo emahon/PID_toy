@@ -40,6 +40,8 @@ all_values = []
 
 paused = False
 
+plt.set_ybound(0,100)
+
 while(True):
     if (paused):
         #wait for user input
@@ -58,8 +60,7 @@ while(True):
         all_values.append(current_value)
         
         loop_count += 1
-
-        print(current_value)
+        
         plt.plot(range(loop_count), all_values)
         plt.pause(1.0/60.0)
 
