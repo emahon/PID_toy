@@ -16,6 +16,7 @@
 
 # graph state of system
 
+import math
 import matplotlib.pyplot as plt
 import time
 
@@ -40,7 +41,8 @@ all_values = []
 
 paused = False
 
-plt.set_ybound(0,100)
+
+fix, ax = plt.subplots()
 
 while(True):
     if (paused):
@@ -61,7 +63,8 @@ while(True):
         
         loop_count += 1
         
-        plt.plot(range(loop_count), all_values)
+        ax.plot(range(loop_count), all_values, 'k')
+        ax.set_ybound(0,100)
         plt.pause(1.0/60.0)
 
         #time.sleep(1.0/60.0)
