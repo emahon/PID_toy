@@ -16,9 +16,10 @@
 
 # graph state of system
 
-import math
 import matplotlib.pyplot as plt
 import time
+
+from matplotlib.widgets import Button
 
 #system variables
 current_value = 0
@@ -30,7 +31,7 @@ friction = 0
 setpoint = 10
 error = 0
 error_sum = 0
-p_constant = 1
+p_constant = .01
 i_constant = 0
 d_constant = 0
 control_input = 0
@@ -41,13 +42,25 @@ all_values = []
 
 paused = False
 
-
 fix, ax = plt.subplots()
+plt.subplots_adjust(bottom=0.2)
+axpause = plt.axes([0.81, 0.05, 0.1, 0.075])
+
+def pause(event):
+    print("paused")
+    global paused
+    paused = True
 
 while(True):
     if (paused):
         #wait for user input
-        print("huh?")
+        p_string = input("Set value of p: ")
+        p_constant = float(p_string)*.01
+        i_string = input("Set value of i: ")
+        i_constant = float(i_string)*.00001
+        d_string = input("Set value of d: ")
+        d_constant = float(d_string)*.01
+        paused = False
     else:
         #run
         error = setpoint - current_value
@@ -65,6 +78,7 @@ while(True):
         
         ax.plot(range(loop_count), all_values, 'k')
         ax.set_ybound(0,100)
+        ax.set_xlim(max(0, loop_count - 50), loop_count)
+        bpause = Button(axpause, "Pause")
+        bpause.on_clicked(pause)
         plt.pause(1.0/60.0)
-
-        #time.sleep(1.0/60.0)
