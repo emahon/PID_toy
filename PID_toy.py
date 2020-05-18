@@ -68,7 +68,7 @@ while(True):
         speed = current_value - previous_value
         previous_value = current_value
 
-        control_input = -1*(p_constant*error + i_constant*error_sum + d_constant*speed)
+        control_input = (p_constant*error + i_constant*error_sum + d_constant*speed)
 
         current_value += (1-friction)*speed - control_input
 
