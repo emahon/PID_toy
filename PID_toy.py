@@ -16,69 +16,77 @@
 
 # graph state of system
 
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import time
 
 from matplotlib.widgets import Button
 
-#system variables
-current_value = 0
-previous_value = 0
-speed = 0
-friction = 0
+class pid_toy:
+    def __init__(self):
+        #system variables
+        self.current_value = 0
+        self.previous_value = 0
+        self.speed = 0
+        self.friction = 0
 
-#pid loop variables
-setpoint = 10
-error = 0
-error_sum = 0
-p_constant = .01
-i_constant = 0
-d_constant = 0
-control_input = 0
+        #pid loop variables
+        self.setpoint = 10
+        self.error = 0
+        self.error_sum = 0
+        self.p_constant = .01
+        self.i_constant = 0
+        self.d_constant = 0
+        self.control_input = 0
 
-#plotting variables
-loop_count = 0
-all_values = []
+        #plotting variables
+        self.loop_count = 0
+        self.all_values = []
 
-paused = False
+        self.paused = False
+    
+    def pause(self, event):
+        print("paused")
+        self.paused = True
 
-fix, ax = plt.subplots()
+    #https://towardsdatascience.com/animations-with-matplotlib-d96375c5442c
+    def animate(self, i):
+        if (self.paused):
+            #wait for user input
+            p_string = input("Set value of p: ")
+            self.p_constant = float(p_string)*.01
+            i_string = input("Set value of i: ")
+            self.i_constant = float(i_string)*.00001
+            d_string = input("Set value of d: ")
+            self.d_constant = float(d_string)*.01        
+            self.paused = False
+        else:
+            #run
+            self.error = self.setpoint - self.current_value
+            self.error_sum += self.error
+            self.speed = self.current_value - self.previous_value
+            self.previous_value = self.current_value
+
+            self.control_input = (self.p_constant*self.error + self.i_constant*self.error_sum - self.d_constant*self.speed)
+
+            self.current_value += (1-self.friction)*self.speed + self.control_input
+
+            self.all_values.append(self.current_value)
+            
+            self.loop_count += 1
+            
+            ax.clear()
+            ax.plot(range(self.loop_count), self.all_values, 'k')
+            ax.set_ybound(0,100)
+            ax.set_xlim(max(0, self.loop_count - 50), self.loop_count)
+            bpause = Button(axpause, "Pause")
+            bpause.on_clicked(self.pause)
+
+fig, ax = plt.subplots()
 plt.subplots_adjust(bottom=0.2)
 axpause = plt.axes([0.81, 0.05, 0.1, 0.075])
 
-def pause(event):
-    print("paused")
-    global paused
-    paused = True
+pid_toy_instance = pid_toy()
 
-while(True):
-    if (paused):
-        #wait for user input
-        p_string = input("Set value of p: ")
-        p_constant = float(p_string)*.01
-        i_string = input("Set value of i: ")
-        i_constant = float(i_string)*.00001
-        d_string = input("Set value of d: ")
-        d_constant = float(d_string)*.01
-        paused = False
-    else:
-        #run
-        error = setpoint - current_value
-        error_sum += error
-        speed = current_value - previous_value
-        previous_value = current_value
-
-        control_input = (p_constant*error + i_constant*error_sum - d_constant*speed)
-
-        current_value += (1-friction)*speed + control_input
-
-        all_values.append(current_value)
-        
-        loop_count += 1
-        
-        ax.plot(range(loop_count), all_values, 'k')
-        ax.set_ybound(0,100)
-        ax.set_xlim(max(0, loop_count - 50), loop_count)
-        bpause = Button(axpause, "Pause")
-        bpause.on_clicked(pause)
-        plt.pause(1.0/60.0)
+ani = animation.FuncAnimation(fig, pid_toy_instance.animate, interval=(1.0/60.0)*1000.0)
+plt.show()
