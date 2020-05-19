@@ -20,6 +20,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import time
 
+from collections import deque
 from matplotlib.widgets import Button
 
 class pid_toy:
@@ -41,7 +42,7 @@ class pid_toy:
 
         #plotting variables
         self.loop_count = 0
-        self.all_values = []
+        self.all_values = deque([], 300)
 
         self.paused = False
     
@@ -76,7 +77,7 @@ class pid_toy:
             self.loop_count += 1
             
             ax.clear()
-            ax.plot(range(self.loop_count), self.all_values, 'k')
+            ax.plot(range(max(0, self.loop_count - 300), self.loop_count), self.all_values, 'k')
             ax.set_ybound(0,100)
             ax.set_xlim(max(0, self.loop_count - 50), self.loop_count)
             bpause = Button(axpause, "Pause")
