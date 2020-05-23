@@ -42,7 +42,7 @@ class pid_toy:
 
         #plotting variables
         self.loop_count = 0
-        self.all_values = deque([], 300)
+        self.all_values = [0]*60#deque([], 60)
 
         self.paused = False
     
@@ -51,7 +51,8 @@ class pid_toy:
         self.paused = True
 
     #https://towardsdatascience.com/animations-with-matplotlib-d96375c5442c
-    def animate(self, i):
+    #https://learn.sparkfun.com/tutorials/graph-sensor-data-with-python-and-matplotlib/speeding-up-the-plot-animation
+    def animate(self, i, line):
         if (self.paused):
             #wait for user input
             p_string = input("Set value of p: ")
@@ -73,21 +74,35 @@ class pid_toy:
             self.current_value += (1-self.friction)*self.speed + self.control_input
 
             self.all_values.append(self.current_value)
+            self.all_values = self.all_values[-60:]
             
             self.loop_count += 1
             
-            ax.clear()
-            ax.plot(range(max(0, self.loop_count - 300), self.loop_count), self.all_values, 'k')
-            ax.set_ybound(0,100)
-            ax.set_xlim(max(0, self.loop_count - 50), self.loop_count)
-            bpause = Button(axpause, "Pause")
-            bpause.on_clicked(self.pause)
+            #ax.clear()
+            #ax.plot(range(max(0, self.loop_count - 60), self.loop_count), self.all_values, 'k')
+            line.set_ydata(self.all_values)
+            
+            
+        return line,
 
 fig, ax = plt.subplots()
 plt.subplots_adjust(bottom=0.2)
 axpause = plt.axes([0.81, 0.05, 0.1, 0.075])
+xs = list(range(0,60))
+ys = [0]*60
+line, = ax.plot(xs, ys, lw=2)
 
 pid_toy_instance = pid_toy()
 
-ani = animation.FuncAnimation(fig, pid_toy_instance.animate, interval=(1.0/60.0)*1000.0)
+ax.set_ybound(0,100)
+#ax.set_xlim(0,60)
+bpause = Button(axpause, "Pause")
+bpause.on_clicked(pid_toy_instance.pause)
+
+ani = animation.FuncAnimation(
+    fig,
+    pid_toy_instance.animate,
+    fargs=(line,),
+    interval=(1.0/120.0)*1000.0,
+    blit=True)
 plt.show()
