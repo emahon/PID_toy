@@ -95,7 +95,7 @@ line, = ax.plot(xs, ys, lw=2)
 pid_toy_instance = pid_toy()
 
 ax.set_ybound(0,100)
-#ax.set_xlim(0,60)
+ax.set_xlim(60,0)
 bpause = Button(axpause, "Pause")
 bpause.on_clicked(pid_toy_instance.pause)
 
