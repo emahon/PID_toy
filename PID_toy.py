@@ -20,7 +20,6 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import time
 
-from collections import deque
 from matplotlib.widgets import Button
 
 class pid_toy:
@@ -42,7 +41,7 @@ class pid_toy:
 
         #plotting variables
         self.loop_count = 0
-        self.all_values = [0]*60#deque([], 60)
+        self.all_values = [0]*x_range
 
         self.paused = False
     
@@ -79,6 +78,8 @@ class pid_toy:
                     valid_d = True
                 except:
                     print("Invalid value for d")
+            self.error = 0
+            self.error_sum = 0
             self.paused = False
         else:
             #run
@@ -90,32 +91,34 @@ class pid_toy:
             self.control_input = (self.p_constant*self.error + self.i_constant*self.error_sum - self.d_constant*self.speed)
 
             self.current_value += (1-self.friction)*self.speed + self.control_input
+            if (self.current_value > 100):
+                self.current_value = 100
+            elif (self.current_value < 0):
+                self.current_value = 0
 
             self.all_values.append(self.current_value)
-            self.all_values = self.all_values[-60:]
+            self.all_values = self.all_values[-x_range:]
             
             self.loop_count += 1
             
-            #ax.clear()
-            #ax.plot(range(max(0, self.loop_count - 60), self.loop_count), self.all_values, 'k')
             list_to_reverse = list(self.all_values)
             list_to_reverse.reverse()
-            line.set_ydata(list_to_reverse)
-            
+            line.set_ydata(list_to_reverse)            
             
         return line,
 
+x_range = 100
 fig, ax = plt.subplots()
 plt.subplots_adjust(bottom=0.2)
 axpause = plt.axes([0.81, 0.05, 0.1, 0.075])
-xs = list(range(0,60))
-ys = [0]*60
+xs = list(range(0,x_range))
+ys = [0]*x_range
 line, = ax.plot(xs, ys, lw=2)
 
 pid_toy_instance = pid_toy()
 
 ax.set_ybound(0,100)
-ax.set_xlim(60,0)
+ax.set_xlim(x_range,0)
 bpause = Button(axpause, "Pause")
 bpause.on_clicked(pid_toy_instance.pause)
 
