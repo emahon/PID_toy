@@ -44,6 +44,14 @@ class pid_toy:
         self.all_values = [0]*x_range
 
         self.paused = False
+        self.curtext = axvalues.text(0.01, 0.5, "Current value: " + str(self.current_value))
+        self.setpointtext = axvalues.text(0.01,0.05, "Setpoint: " + str(self.setpoint))
+        self.ptext = axvalues.text(0.3,0.5,"P: " + str(self.p_constant*100))
+        self.errtext = axvalues.text(0.3,0.05,"Error: " + str(self.error))
+        self.itext = axvalues.text(0.6,0.5, "I: " + str(self.i_constant*10000))
+        self.cumerrtext = axvalues.text(0.6,0.05, "Cumulative error: " + str(self.error_sum*.01))
+        self.dtext = axvalues.text(0.9,0.5, "D: " + str(self.d_constant*100))
+        self.speedtext = axvalues.text(0.9,0.05, "Speed: " + str(self.speed))
     
     def pause(self, event):
         print("paused")
@@ -66,7 +74,7 @@ class pid_toy:
             while (not valid_i):
                 try:
                     i_string = input("Set value of i: ")
-                    self.i_constant = float(i_string)*.00001
+                    self.i_constant = float(i_string)*.0001
                     valid_i = True
                 except:
                     print("Invalid value for i")
@@ -81,6 +89,12 @@ class pid_toy:
             self.error = 0
             self.error_sum = 0
             self.paused = False
+            
+            self.setpointtext.set_text("Setpoint: " + str(self.setpoint))
+            self.ptext.set_text("P: " + str(self.p_constant*100))
+            self.itext.set_text("I: " + str(self.i_constant*10000))
+            self.dtext.set_text("D: " + str(self.d_constant*100))
+            self.setpointtext.set_text("Setpoint: " + str(self.setpoint))
         else:
             #run
             self.error = self.setpoint - self.current_value
@@ -103,14 +117,26 @@ class pid_toy:
             
             list_to_reverse = list(self.all_values)
             list_to_reverse.reverse()
-            line.set_ydata(list_to_reverse)            
-            
-        return line,
+            line.set_ydata(list_to_reverse)
 
-x_range = 100
+            self.curtext.set_text("Current value: " + str(self.current_value))
+            self.errtext.set_text("Error: " + str(self.error))
+            self.cumerrtext.set_text("Cumulative error: " + str(self.error_sum*.01))
+            self.speedtext.set_text("Speed: " + str(self.speed))
+            
+        return line, self.curtext, self.setpointtext, self.ptext, self.errtext, self.itext, self.cumerrtext, self.dtext, self.speedtext, 
+
+x_range = 150
 fig, ax = plt.subplots()
 plt.subplots_adjust(bottom=0.2)
 axpause = plt.axes([0.81, 0.05, 0.1, 0.075])
+
+#axis to put text for values on
+axvalues = plt.axes([0.05, 0.05, 0.7, 0.075])
+#hide axes
+axvalues.set_xticks([])
+axvalues.set_yticks([])
+
 xs = list(range(0,x_range))
 ys = [0]*x_range
 line, = ax.plot(xs, ys, lw=2)
