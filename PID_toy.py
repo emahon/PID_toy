@@ -55,12 +55,30 @@ class pid_toy:
     def animate(self, i, line):
         if (self.paused):
             #wait for user input
-            p_string = input("Set value of p: ")
-            self.p_constant = float(p_string)*.01
-            i_string = input("Set value of i: ")
-            self.i_constant = float(i_string)*.00001
-            d_string = input("Set value of d: ")
-            self.d_constant = float(d_string)*.01        
+            valid_p = False
+            while (not valid_p):
+                try:
+                    p_string = input("Set value of p: ")
+                    self.p_constant = float(p_string)*.01
+                    valid_p = True
+                except:
+                    print("Invalid value for p")
+            valid_i = False
+            while (not valid_i):
+                try:
+                    i_string = input("Set value of i: ")
+                    self.i_constant = float(i_string)*.00001
+                    valid_i = True
+                except:
+                    print("Invalid value for i")
+            valid_d = False
+            while (not valid_d):
+                try:
+                    d_string = input("Set value of d: ")
+                    self.d_constant = float(d_string)*.01
+                    valid_d = True
+                except:
+                    print("Invalid value for d")
             self.paused = False
         else:
             #run
@@ -80,7 +98,9 @@ class pid_toy:
             
             #ax.clear()
             #ax.plot(range(max(0, self.loop_count - 60), self.loop_count), self.all_values, 'k')
-            line.set_ydata(self.all_values)
+            list_to_reverse = list(self.all_values)
+            list_to_reverse.reverse()
+            line.set_ydata(list_to_reverse)
             
             
         return line,
