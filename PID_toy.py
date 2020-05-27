@@ -44,14 +44,14 @@ class pid_toy:
         self.all_values = [0]*x_range
 
         self.paused = False
-        self.curtext = axvalues.text(0.01, 0.5, "Current value: " + str(self.current_value))
+        self.curtext = axvalues.text(0.01, 0.5, "Value: " + "{:.2f}".format(self.current_value))
         self.setpointtext = axvalues.text(0.01,0.05, "Setpoint: " + str(self.setpoint))
-        self.ptext = axvalues.text(0.3,0.5,"P: " + str(self.p_constant*100))
-        self.errtext = axvalues.text(0.3,0.05,"Error: " + str(self.error))
-        self.itext = axvalues.text(0.6,0.5, "I: " + str(self.i_constant*10000))
-        self.cumerrtext = axvalues.text(0.6,0.05, "Cumulative error: " + str(self.error_sum*.01))
-        self.dtext = axvalues.text(0.9,0.5, "D: " + str(self.d_constant*100))
-        self.speedtext = axvalues.text(0.9,0.05, "Speed: " + str(self.speed))
+        self.ptext = axvalues.text(0.22,0.5,"P: " + str(self.p_constant*100))
+        self.errtext = axvalues.text(0.22,0.05,"Error: " + "{:.2f}".format(self.error))
+        self.itext = axvalues.text(0.42,0.5, "I: " + str(self.i_constant*10000))
+        self.cumerrtext = axvalues.text(0.42,0.05, "Summed error: " + "{:.2f}".format(self.error_sum*.01))
+        self.dtext = axvalues.text(0.75,0.5, "D: " + str(self.d_constant*100))
+        self.speedtext = axvalues.text(0.75,0.05, "Speed: " + "{:.2f}".format(self.speed))
     
     def pause(self, event):
         print("paused")
@@ -119,10 +119,10 @@ class pid_toy:
             list_to_reverse.reverse()
             line.set_ydata(list_to_reverse)
 
-            self.curtext.set_text("Current value: " + str(self.current_value))
-            self.errtext.set_text("Error: " + str(self.error))
-            self.cumerrtext.set_text("Cumulative error: " + str(self.error_sum*.01))
-            self.speedtext.set_text("Speed: " + str(self.speed))
+            self.curtext.set_text("Value: " + "{:.2f}".format(self.current_value))
+            self.errtext.set_text("Error: " + "{:.2f}".format(self.error))
+            self.cumerrtext.set_text("Summed error: " + "{:.2f}".format(self.error_sum*.01))
+            self.speedtext.set_text("Speed: " + "{:.2f}".format(self.speed))
             
         return line, self.curtext, self.setpointtext, self.ptext, self.errtext, self.itext, self.cumerrtext, self.dtext, self.speedtext, 
 
