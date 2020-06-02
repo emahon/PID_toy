@@ -56,6 +56,7 @@ class pid_toy:
     def pause(self, event):
         print("paused")
         self.paused = True
+        ani.event_source.stop()
 
     #https://towardsdatascience.com/animations-with-matplotlib-d96375c5442c
     #https://learn.sparkfun.com/tutorials/graph-sensor-data-with-python-and-matplotlib/speeding-up-the-plot-animation
@@ -95,6 +96,7 @@ class pid_toy:
             self.itext.set_text("I: " + str(self.i_constant*10000))
             self.dtext.set_text("D: " + str(self.d_constant*100))
             self.setpointtext.set_text("Setpoint: " + str(self.setpoint))
+            ani.event_source.start()
         else:
             #run
             self.error = self.setpoint - self.current_value
