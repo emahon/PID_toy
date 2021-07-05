@@ -24,6 +24,9 @@ from matplotlib.widgets import Button
 
 class pid_toy:
     def __init__(self):
+        #format constant
+        self.format = "{: .1e}"
+
         #system variables
         self.current_value = 0 # current position
         self.previous_value = 0 # previous position
@@ -47,21 +50,21 @@ class pid_toy:
         self.all_values = [0]*x_range
 
         self.paused = False
-        self.curtext = axvalues.text(0.01, 0.7, "Value: " + "{:.2f}".format(self.current_value))
-        self.setpointtext = axvalues.text(0.01,0.35, "Setpoint: " + str(self.setpoint))
-        self.totalforce = axvalues.text(0.01,0.05, "Force: " + "{:.2f}".format(self.acceleration))
+        self.curtext = axvalues.text(0.01, 0.7, "Value: " + self.format.format(self.current_value))
+        self.setpointtext = axvalues.text(0.01,0.35, "Setpoint: " + self.format.format(self.setpoint))
+        self.totalforce = axvalues.text(0.01,0.05, "Force: " + self.format.format(self.acceleration))
 
-        self.ptext = axvalues.text(0.22,0.7,"P: " + str(self.p_constant))
-        self.errtext = axvalues.text(0.22,0.35,"Error: " + "{:.2f}".format(self.error))
-        self.ptottext = axvalues.text(0.22,0.05,"Total P: " + "{:.2f}".format(self.p_constant*self.error))
+        self.ptext = axvalues.text(0.22,0.7,"P: " + self.format.format(self.p_constant))
+        self.errtext = axvalues.text(0.22,0.35,"Error: " + self.format.format(self.error))
+        self.ptottext = axvalues.text(0.22,0.05,"Total P: " + self.format.format(self.p_constant*self.error))
 
-        self.itext = axvalues.text(0.42,0.7, "I: " + str(self.i_constant))
-        self.cumerrtext = axvalues.text(0.42,0.35, "Summed error: " + "{:.2f}".format(self.error_sum))
-        self.itottext = axvalues.text(0.42,0.05, "Total I: " + "{:.2f}".format(self.i_constant*self.error_sum))
+        self.itext = axvalues.text(0.42,0.7, "I: " + self.format.format(self.i_constant))
+        self.cumerrtext = axvalues.text(0.42,0.35, "Summed error: " + self.format.format(self.error_sum))
+        self.itottext = axvalues.text(0.42,0.05, "Total I: " + self.format.format(self.i_constant*self.error_sum))
 
-        self.dtext = axvalues.text(0.75,0.7, "D: " + str(self.d_constant))
-        self.speedtext = axvalues.text(0.75,0.35, "Speed: " + "{:.2f}".format(self.current_speed))
-        self.dtottext = axvalues.text(0.75,0.05, "Total D: " + "{:.2f}".format(self.d_constant*self.current_speed))
+        self.dtext = axvalues.text(0.75,0.7, "D: " + self.format.format(self.d_constant))
+        self.speedtext = axvalues.text(0.75,0.35, "Speed: " + self.format.format(self.current_speed))
+        self.dtottext = axvalues.text(0.75,0.05, "Total D: " + self.format.format(self.d_constant*self.current_speed))
     
     def pause(self, event):
         print("paused")
@@ -97,11 +100,11 @@ class pid_toy:
         self.error_sum = 0
         self.paused = False
         
-        self.setpointtext.set_text("Setpoint: " + str(self.setpoint))
-        self.ptext.set_text("P: " + str(self.p_constant))
-        self.itext.set_text("I: " + str(self.i_constant))
-        self.dtext.set_text("D: " + str(self.d_constant))
-        self.setpointtext.set_text("Setpoint: " + str(self.setpoint))
+        self.setpointtext.set_text("Setpoint: " + self.format.format(self.setpoint))
+        self.ptext.set_text("P: " + self.format.format(self.p_constant))
+        self.itext.set_text("I: " + self.format.format(self.i_constant))
+        self.dtext.set_text("D: " + self.format.format(self.d_constant))
+        self.setpointtext.set_text("Setpoint: " + self.format.format(self.setpoint))
         ani.event_source.start()
         
 
@@ -132,7 +135,7 @@ class pid_toy:
         # todo add ability for disturbance function, replace 0 with it
         self.acceleration = 0-self.friction_force-self.control_force
 
-        self.speedtext.set_text("Speed: " + "{:.2f}".format(self.current_speed))
+        self.speedtext.set_text("Speed: " + self.format.format(self.current_speed))
 
         self.current_speed = self.current_speed + self.acceleration
 
@@ -153,21 +156,21 @@ class pid_toy:
         line.set_ydata(list_to_reverse)
         setpointline.set_ydata([self.setpoint]*x_range)
 
-        self.curtext.set_text("Value: " + "{:.2f}".format(self.current_value))
-        self.totalforce.set_text("Force: " + "{:.2f}".format(self.acceleration))
+        self.curtext.set_text("Value: " + self.format.format(self.current_value))
+        self.totalforce.set_text("Force: " + self.format.format(self.acceleration))
         
-        self.errtext.set_text("Error: " + "{:.2f}".format(self.error))
-        self.ptottext.set_text("Total P: " + "{:.2f}".format(self.p_constant*self.error))
+        self.errtext.set_text("Error: " + self.format.format(self.error))
+        self.ptottext.set_text("Total P: " + self.format.format(self.p_constant*self.error))
         
-        self.cumerrtext.set_text("Summed error: " + "{:.2f}".format(self.error_sum))
-        self.itottext.set_text("Total I: " + "{:.2f}".format(self.i_constant*self.error_sum))
+        self.cumerrtext.set_text("Summed error: " + self.format.format(self.error_sum))
+        self.itottext.set_text("Total I: " + self.format.format(self.i_constant*self.error_sum))
 
-        self.dtottext.set_text("Total D: " + "{:.2f}".format(self.d_constant*self.current_speed))
+        self.dtottext.set_text("Total D: " + self.format.format(self.d_constant*self.current_speed))
             
         return line, self.curtext, self.totalforce, self.setpointtext, self.ptext, self.errtext, self.ptottext, self.itext, self.cumerrtext, self.itottext, self.dtext, self.speedtext, self.dtottext, 
 
 x_range = 150
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(10,7)) # units are inches
 plt.subplots_adjust(bottom=0.3)
 axpause = plt.axes([0.81, 0.05, 0.1, 0.075])
 
@@ -195,4 +198,5 @@ ani = animation.FuncAnimation(
     fargs=(line,setpointline),
     interval=(1.0/120.0)*1000.0,
     blit=True)
+
 plt.show()
