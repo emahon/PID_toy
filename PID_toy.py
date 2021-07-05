@@ -25,10 +25,14 @@ from matplotlib.widgets import Button
 class pid_toy:
     def __init__(self):
         #system variables
-        self.current_value = 0
-        self.previous_value = 0
-        self.speed = 0
-        self.friction = 0
+        self.current_value = 0 # current position
+        self.previous_value = 0 # previous position
+        self.previous_speed = 0
+        self.current_speed = 0
+        self.friction_coefficient = 0
+        self.friction_force = 0
+        self.acceleration = 0
+        self.control_force = 0
 
         #pid loop variables
         self.setpoint = 10
@@ -51,7 +55,7 @@ class pid_toy:
         self.itext = axvalues.text(0.42,0.5, "I: " + str(self.i_constant*10000))
         self.cumerrtext = axvalues.text(0.42,0.05, "Summed error: " + "{:.2f}".format(self.error_sum*.01))
         self.dtext = axvalues.text(0.75,0.5, "D: " + str(self.d_constant*100))
-        self.speedtext = axvalues.text(0.75,0.05, "Speed: " + "{:.2f}".format(self.speed))
+        self.speedtext = axvalues.text(0.75,0.05, "Speed: " + "{:.2f}".format(self.current_speed))
     
     def pause(self, event):
         print("paused")
@@ -99,14 +103,25 @@ class pid_toy:
             ani.event_source.start()
         else:
             #run
-            self.error = self.setpoint - self.current_value
+            # https://github.com/emahon/PID_toy/issues/12
+
+            # correction force from PID controller
+            self.control_force = self.p_constant*self.error+self.i_constant*self.error_sum+self.d_constant+self.previous_speed
+
+            self.previous_speed = self.current_speed
+
             self.error_sum += self.error
-            self.speed = self.current_value - self.previous_value
-            self.previous_value = self.current_value
+            self.error = self.current_value - self.setpoint
 
-            self.control_input = (self.p_constant*self.error + self.i_constant*self.error_sum - self.d_constant*self.speed)
+            self.friction_force = self.friction_coefficient*self.current_speed
 
-            self.current_value += (1-self.friction)*self.speed + self.control_input
+            # todo add ability for disturbance function, replace 0 with it
+            self.acceleration = 0-self.friction_force-self.control_force
+
+            self.current_speed = self.current_speed + self.acceleration
+
+            self.current_value = self.current_value + self.current_speed
+
             if (self.current_value > 100):
                 self.current_value = 100
             elif (self.current_value < 0):
@@ -124,7 +139,7 @@ class pid_toy:
             self.curtext.set_text("Value: " + "{:.2f}".format(self.current_value))
             self.errtext.set_text("Error: " + "{:.2f}".format(self.error))
             self.cumerrtext.set_text("Summed error: " + "{:.2f}".format(self.error_sum*.01))
-            self.speedtext.set_text("Speed: " + "{:.2f}".format(self.speed))
+            self.speedtext.set_text("Speed: " + "{:.2f}".format(self.current_speed))
             
         return line, self.curtext, self.setpointtext, self.ptext, self.errtext, self.itext, self.cumerrtext, self.dtext, self.speedtext, 
 
