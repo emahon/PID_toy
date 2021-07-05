@@ -37,7 +37,7 @@ class pid_toy:
         self.control_force = 0
 
         #pid loop variables
-        self.setpoint = 10
+        self.setpoint = 50
         self.error = 0
         self.error_sum = 0
         self.p_constant = .01
@@ -167,7 +167,7 @@ class pid_toy:
 
         self.dtottext.set_text("Total D: " + self.format.format(self.d_constant*self.current_speed))
             
-        return line, self.curtext, self.totalforce, self.setpointtext, self.ptext, self.errtext, self.ptottext, self.itext, self.cumerrtext, self.itottext, self.dtext, self.speedtext, self.dtottext, 
+        return line, self.curtext, self.totalforce, self.setpointtext, self.ptext, self.errtext, self.ptottext, self.itext, self.cumerrtext, self.itottext, self.dtext, self.speedtext, self.dtottext, axpause,
 
 x_range = 150
 fig, ax = plt.subplots(figsize=(10,7)) # units are inches
