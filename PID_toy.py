@@ -56,7 +56,7 @@ class pid_toy:
         self.ptottext = axvalues.text(0.22,0.05,"Total P: " + "{:.2f}".format(self.p_constant*self.error))
 
         self.itext = axvalues.text(0.42,0.7, "I: " + str(self.i_constant))
-        self.cumerrtext = axvalues.text(0.42,0.35, "Summed error: " + "{:.2f}".format(self.error_sum*.01))
+        self.cumerrtext = axvalues.text(0.42,0.35, "Summed error: " + "{:.2f}".format(self.error_sum))
         self.itottext = axvalues.text(0.42,0.05, "Total I: " + "{:.2f}".format(self.i_constant*self.error_sum))
 
         self.dtext = axvalues.text(0.75,0.7, "D: " + str(self.d_constant))
@@ -107,7 +107,7 @@ class pid_toy:
 
     #https://towardsdatascience.com/animations-with-matplotlib-d96375c5442c
     #https://learn.sparkfun.com/tutorials/graph-sensor-data-with-python-and-matplotlib/speeding-up-the-plot-animation
-    def animate(self, i, line):
+    def animate(self, i, line, setpointline):
         #run
         # https://github.com/emahon/PID_toy/issues/12
 
@@ -119,7 +119,10 @@ class pid_toy:
 
         self.control_force = self.p_constant*self.error+self.i_constant*self.error_sum+self.d_constant*self.current_speed
 
-
+        if (self.control_force > .1):
+            self.control_force = .1
+        elif (self.control_force < -.1):
+            self.control_force = -.1
 
         self.error_sum += self.error
         self.error = self.current_value - self.setpoint
@@ -128,6 +131,8 @@ class pid_toy:
 
         # todo add ability for disturbance function, replace 0 with it
         self.acceleration = 0-self.friction_force-self.control_force
+
+        self.speedtext.set_text("Speed: " + "{:.2f}".format(self.current_speed))
 
         self.current_speed = self.current_speed + self.acceleration
 
@@ -146,6 +151,7 @@ class pid_toy:
         list_to_reverse = list(self.all_values)
         list_to_reverse.reverse()
         line.set_ydata(list_to_reverse)
+        setpointline.set_ydata([self.setpoint]*x_range)
 
         self.curtext.set_text("Value: " + "{:.2f}".format(self.current_value))
         self.totalforce.set_text("Force: " + "{:.2f}".format(self.acceleration))
@@ -153,10 +159,9 @@ class pid_toy:
         self.errtext.set_text("Error: " + "{:.2f}".format(self.error))
         self.ptottext.set_text("Total P: " + "{:.2f}".format(self.p_constant*self.error))
         
-        self.cumerrtext.set_text("Summed error: " + "{:.2f}".format(self.error_sum*.01))
+        self.cumerrtext.set_text("Summed error: " + "{:.2f}".format(self.error_sum))
         self.itottext.set_text("Total I: " + "{:.2f}".format(self.i_constant*self.error_sum))
 
-        self.speedtext.set_text("Speed: " + "{:.2f}".format(self.current_speed))
         self.dtottext.set_text("Total D: " + "{:.2f}".format(self.d_constant*self.current_speed))
             
         return line, self.curtext, self.totalforce, self.setpointtext, self.ptext, self.errtext, self.ptottext, self.itext, self.cumerrtext, self.itottext, self.dtext, self.speedtext, self.dtottext, 
@@ -175,6 +180,7 @@ axvalues.set_yticks([])
 xs = list(range(0,x_range))
 ys = [0]*x_range
 line, = ax.plot(xs, ys, lw=2)
+setpointline, = ax.plot(xs, ys, lw=2)
 
 pid_toy_instance = pid_toy()
 
@@ -186,7 +192,7 @@ bpause.on_clicked(pid_toy_instance.pause)
 ani = animation.FuncAnimation(
     fig,
     pid_toy_instance.animate,
-    fargs=(line,),
+    fargs=(line,setpointline),
     interval=(1.0/120.0)*1000.0,
     blit=True)
 plt.show()
