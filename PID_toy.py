@@ -214,7 +214,7 @@ class pid_toy:
 
 if (__name__ == '__main__'):
     # https://stackoverflow.com/questions/40177743/why-does-input-cause-qcoreapplicationexec-the-event-loop-is-already-runnin
-    pyqtRemoveInputHook()    
+    #pyqtRemoveInputHook()    
 
     x_range = 150
     fig, ax = plt.subplots(figsize=(10,7)) # units are inches
