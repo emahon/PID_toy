@@ -57,10 +57,12 @@ class pid_toy:
         self.setpoint = 50
         self.error = 0
         self.error_sum = 0
-        self.p_constant = .01
-        self.i_constant = 0
-        self.d_constant = 0
+        self.p_constant = .001
+        self.i_constant = .000005
+        self.d_constant = .04
         self.control_input = 0
+        self.maximum_control_input = .01
+        self.maximum_disturbance = .02
 
         #plotting variables
         self.loop_count = 0
@@ -163,18 +165,18 @@ class pid_toy:
 
         self.control_force = self.p_constant*self.error+self.i_constant*self.error_sum+self.d_constant*self.current_speed
 
-        if (self.control_force > .1):
-            self.control_force = .1
-        elif (self.control_force < -.1):
-            self.control_force = -.1
+        if (self.control_force > self.maximum_control_input):
+            self.control_force = self.maximum_control_input
+        elif (self.control_force < -1*self.maximum_control_input):
+            self.control_force = -1*self.maximum_control_input
 
         self.error_sum += self.error
         self.error = self.current_value - self.setpoint
 
-        self.friction_force = self.friction_coefficient*self.current_speed
+        self.friction_force = self.friction_coefficient*self.current_speed*self.current_speed
 
         # todo add ability for disturbance function, replace 0 with it
-        randDist = .1*(2*random.random() - 1)
+        randDist = self.maximum_disturbance*(2*random.random() - 1)
         self.acceleration = randDist-self.friction_force-self.control_force
 
         self.speedtext.set_text("Speed: " + self.format.format(self.current_speed))
