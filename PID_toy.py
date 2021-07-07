@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import random
 import time
 
+from enum import Enum
 from matplotlib.widgets import Button
 
 # https://matplotlib.org/stable/gallery/user_interfaces/embedding_in_qt_sgskip.html
@@ -163,7 +164,7 @@ class pid_toy:
                     valid_vc = True
                     break
                 parsed_vc = float(vc_string)
-                valid_vc = (parsed_vc >= 0) and (parsed vc <= 100)
+                valid_vc = (parsed_vc >= 0) and (parsed_vc <= 100)
                 if (valid_vc):
                     self.current_value = parsed_vc
             except:
@@ -291,7 +292,7 @@ if (__name__ == '__main__'):
         fig,
         pid_toy_instance.animate,
         fargs=(line,setpointline),
-        interval=(self.timestep)*1000.0,
+        interval=(pid_toy_instance.timestep)*1000.0,
         blit=True)
 
     plt.show()
