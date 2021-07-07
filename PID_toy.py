@@ -1,4 +1,3 @@
-# keep an eye on the console - if the user types "pause", need to pause
 # then prompt user for P, I, D, setpoint, and friction
 # (give previous values when prompt)
 # also allow the user to set the current state of the output
@@ -12,10 +11,9 @@
 
 # implement a PID loop
 
-# we don't want to loop as fast as possible, so we'll want a delay in the loop
-
 # graph state of system
 
+import math
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import random
@@ -38,6 +36,16 @@ from matplotlib.widgets import Button
 #        super().__init__()
 #        self._main = QtWidgets.QWidget()
 #        self.setCentralWidget(self._main)
+
+class Disturbance(Enum):
+    NONE = 0
+    RANDOM = 1
+    SINE = 2
+    CONST = 3
+    SQUARE = 4
+    HELL = 5
+    EXTSET = 6
+    PERIOD = 7
 
 class pid_toy:
     def __init__(self):
@@ -62,11 +70,19 @@ class pid_toy:
         self.d_constant = .04
         self.control_input = 0
         self.maximum_control_input = .01
+
+        # disturbance variables
         self.maximum_disturbance = .02
+        self.disturbance_func = Disturbance.NONE
+        self.disturbance_freq = 0
+        self.disturbance_val = 0
+        self.ext_setpoint = self.setpoint
+        self.ext_setpoint_k = 0
 
         #plotting variables
         self.loop_count = 0
         self.all_values = [0]*x_range
+        self.timestep = 1.0/120.0 # should be in seconds
 
         self.paused = False
         self.curtext = axvalues.text(0.01, 0.7, "Value: " + self.format.format(self.current_value))
@@ -139,15 +155,29 @@ class pid_toy:
             except:
                 print("Invalid setpoint")
 
+        valid_vc = False
+        while (not valid_vc):
+            try:
+                vc_string = input("Current value: ")
+                if (vc_string == ""):
+                    valid_vc = True
+                    break
+                parsed_vc = float(vc_string)
+                valid_vc = (parsed_vc >= 0) and (parsed vc <= 100)
+                if (valid_vc):
+                    self.current_value = parsed_vc
+            except:
+                print("Invalid value")
+
         self.error = 0
         self.error_sum = 0
         self.paused = False
         
-        self.setpointtext.set_text("Setpoint: " + self.format.format(self.setpoint))
         self.ptext.set_text("P: " + self.format.format(self.p_constant))
         self.itext.set_text("I: " + self.format.format(self.i_constant))
         self.dtext.set_text("D: " + self.format.format(self.d_constant))
         self.setpointtext.set_text("Setpoint: " + self.format.format(self.setpoint))
+        self.curtext.set_text("Value: " + self.format.format(self.current_value))
         ani.event_source.start()
         
 
@@ -176,8 +206,24 @@ class pid_toy:
         self.friction_force = self.friction_coefficient*self.current_speed*self.current_speed
 
         # todo add ability for disturbance function, replace 0 with it
-        randDist = self.maximum_disturbance*(2*random.random() - 1)
-        self.acceleration = randDist-self.friction_force-self.control_force
+        dist = 0
+        
+        if (self.disturbance_func == Disturbance.RANDOM):
+            dist = self.maximum_disturbance*(2*random.random() - 1)
+        elif (self.disturbance_func == Disturbance.SINE):
+            dist = self.maximum_disturbance*math.sin(2*math.pi) # todo: frequency stuff
+        elif (self.disturbance_func == Disturbance.CONST):
+            dist = self.maximum_disturbance*self.disturbance_val
+        elif (self.disturbance_func == Disturbance.SQUARE):
+            dist = 0
+        elif (self.disturbance_func == Disturbance.HELL):
+            dist = 0
+        elif (self.disturbance_func == Disturbance.EXTSET):
+            dist = 0
+        elif (self.disturbance_func == Disturbance.PERIOD):
+            dist = 0
+
+        self.acceleration = dist-self.friction_force-self.control_force
 
         self.speedtext.set_text("Speed: " + self.format.format(self.current_speed))
 
@@ -245,7 +291,7 @@ if (__name__ == '__main__'):
         fig,
         pid_toy_instance.animate,
         fargs=(line,setpointline),
-        interval=(1.0/120.0)*1000.0,
+        interval=(self.timestep)*1000.0,
         blit=True)
 
     plt.show()
