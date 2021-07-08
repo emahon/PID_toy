@@ -66,6 +66,7 @@ class pid_toy:
         self.setpoint = 50
         self.error = 0
         self.error_sum = 0
+        self.error_speed = 0
         self.p_constant = .001
         self.i_constant = .000005
         self.d_constant = .04
@@ -194,7 +195,7 @@ class pid_toy:
 
         self.previous_value = self.current_value
 
-        self.control_force = self.p_constant*self.error+self.i_constant*self.error_sum+self.d_constant*self.current_speed
+        self.control_force = self.p_constant*self.error+self.i_constant*self.error_sum+self.d_constant*self.error_speed
 
         if (self.control_force > self.maximum_control_input):
             self.control_force = self.maximum_control_input
@@ -202,7 +203,9 @@ class pid_toy:
             self.control_force = -1*self.maximum_control_input
 
         self.error_sum += self.error
+        prev_error = self.error
         self.error = self.current_value - self.setpoint
+        self.error_speed = self.error - prev_error
 
         self.friction_force = self.friction_coefficient*self.current_speed*self.current_speed
 
@@ -256,7 +259,7 @@ class pid_toy:
         self.cumerrtext.set_text("Summed error: " + self.format.format(self.error_sum))
         self.itottext.set_text("Total I: " + self.format.format(self.i_constant*self.error_sum))
 
-        self.dtottext.set_text("Total D: " + self.format.format(self.d_constant*self.current_speed))
+        self.dtottext.set_text("Total D: " + self.format.format(self.d_constant*self.error_speed))
             
         return line, setpointline, self.curtext, self.totalforce, self.setpointtext, self.ptext, self.errtext, self.ptottext, self.itext, self.cumerrtext, self.itottext, self.dtext, self.speedtext, self.dtottext, axpause,
 
