@@ -17,39 +17,30 @@ import math
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import random
+import sys
 import time
 
 from enum import Enum
+from matplotlib.figure import Figure
 from matplotlib.widgets import Button
 
 # https://matplotlib.org/stable/gallery/user_interfaces/embedding_in_qt_sgskip.html
-#from matplotlib.backends.qt_compat import QtCore, QtWidgets
-#if QtCore.qVersion() >= "5.": # which it should be
-#    from matplotlib.backends.backend_qt5agg import (FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-#else:
-#    from matplotlib.backends.backend_qt4agg import (FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-#from matplotlib.figure import Figure
-#
-#from PyQt5.QtCore import pyqtRemoveInputHook
-#
-#class ApplicationWindow(QtWidgets.QMainWindow):
-#    def __init__(self):
-#        super().__init__()
-#        self._main = QtWidgets.QWidget()
-#        self.setCentralWidget(self._main)
+from matplotlib.backends.qt_compat import QtCore, QtWidgets
 
-class Disturbance(Enum):
-    NONE = 0
-    RANDOM = 1
-    SINE = 2
-    CONST = 3
-    SQUARE = 4
-    HELL = 5
-    EXTSET = 6
-    PERIOD = 7
+from matplotlib.backends.backend_qt5agg import (FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.figure import Figure
 
-class pid_toy:
+from PyQt5.QtCore import pyqtRemoveInputHook
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
+
+class PID_Toy(QtWidgets.QMainWindow):
     def __init__(self):
+        super().__init__()
+
+        #
+        # initialize calculation stuff
+        #
+
         #format constant
         self.format = "{: .1e}"
 
@@ -102,11 +93,44 @@ class pid_toy:
         self.dtext = axvalues.text(0.75,0.7, "D: " + self.format.format(self.d_constant))
         self.speedtext = axvalues.text(0.75,0.35, "Speed: " + self.format.format(self.current_speed))
         self.dtottext = axvalues.text(0.75,0.05, "Total D: " + self.format.format(self.d_constant*self.current_speed))
-    
+
+        #
+        # initialize visualization stuff
+        #
+
+        self._main = QtWidgets.QWidget()
+        self.setCentralWidget(self._main)
+        layout = QtWidgets.QGridLayout(self._main)
+
+        xs = list(range(0,x_range))
+        ys = [0]*x_range
+        line, = ax.plot(xs, ys, lw=2)
+        setpointline, = ax.plot(xs, ys, lw=2)
+
+        ax.set_ybound(0,100)
+        ax.set_xlim(x_range,0)
+
+        self.ani = animation.FuncAnimation(
+            fig,
+            self.animate,
+            fargs=(line,setpointline),
+            interval=(self.timestep)*1000.0,
+            blit=True)        
+
+        canvas = FigureCanvas(fig)
+        layout.addWidget(canvas, 0, 0)
+        self.addToolBar(NavigationToolbar(canvas, self))
+
+        # button
+        button = QPushButton("Pause")
+        layout.addWidget(button, 2, 2)
+        button.clicked.connect(self.pause)
+        button.show()
+
     def pause(self, event):
         print("paused")
         self.paused = True
-        ani.event_source.stop()
+        self.ani.event_source.stop()
         print("Hit enter to skip input and keep variable at current value")
         # get user input
         valid_p = False
@@ -180,8 +204,7 @@ class pid_toy:
         self.dtext.set_text("D: " + self.format.format(self.d_constant))
         self.setpointtext.set_text("Setpoint: " + self.format.format(self.setpoint))
         self.curtext.set_text("Value: " + self.format.format(self.current_value))
-        ani.event_source.start()
-        
+        self.ani.event_source.start()
 
     #https://towardsdatascience.com/animations-with-matplotlib-d96375c5442c
     #https://learn.sparkfun.com/tutorials/graph-sensor-data-with-python-and-matplotlib/speeding-up-the-plot-animation
@@ -261,17 +284,29 @@ class pid_toy:
 
         self.dtottext.set_text("Total D: " + self.format.format(self.d_constant*self.error_speed))
             
-        return line, setpointline, self.curtext, self.totalforce, self.setpointtext, self.ptext, self.errtext, self.ptottext, self.itext, self.cumerrtext, self.itottext, self.dtext, self.speedtext, self.dtottext, axpause,
+        return line, setpointline, self.curtext, self.totalforce, self.setpointtext, self.ptext, self.errtext, self.ptottext, self.itext, self.cumerrtext, self.itottext, self.dtext, self.speedtext, self.dtottext,
 
 
+
+class Disturbance(Enum):
+    NONE = 0
+    RANDOM = 1
+    SINE = 2
+    CONST = 3
+    SQUARE = 4
+    HELL = 5
+    EXTSET = 6
+    PERIOD = 7        
+
+    
 if (__name__ == '__main__'):
     # https://stackoverflow.com/questions/40177743/why-does-input-cause-qcoreapplicationexec-the-event-loop-is-already-runnin
-    #pyqtRemoveInputHook()    
+    pyqtRemoveInputHook()
 
     x_range = 150
+
     fig, ax = plt.subplots(figsize=(10,7)) # units are inches
     plt.subplots_adjust(bottom=0.3)
-    axpause = plt.axes([0.81, 0.05, 0.1, 0.075])
 
     #axis to put text for values on
     axvalues = plt.axes([0.05, 0.05, 0.7, 0.125])
@@ -279,23 +314,12 @@ if (__name__ == '__main__'):
     axvalues.set_xticks([])
     axvalues.set_yticks([])
 
-    xs = list(range(0,x_range))
-    ys = [0]*x_range
-    line, = ax.plot(xs, ys, lw=2)
-    setpointline, = ax.plot(xs, ys, lw=2)
+    qapp = QtWidgets.QApplication.instance()
+    if not qapp:
+        qapp = QtWidgets.QApplication(sys.argv)
 
-    pid_toy_instance = pid_toy()
-
-    ax.set_ybound(0,100)
-    ax.set_xlim(x_range,0)
-    bpause = Button(axpause, "Pause")
-    bpause.on_clicked(pid_toy_instance.pause)
-
-    ani = animation.FuncAnimation(
-        fig,
-        pid_toy_instance.animate,
-        fargs=(line,setpointline),
-        interval=(pid_toy_instance.timestep)*1000.0,
-        blit=True)
-
-    plt.show()
+    app = PID_Toy()
+    app.show()
+    app.activateWindow()
+    app.raise_()
+    qapp.exec_()
