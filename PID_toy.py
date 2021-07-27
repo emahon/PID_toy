@@ -30,8 +30,8 @@ from matplotlib.backends.qt_compat import QtCore, QtWidgets
 from matplotlib.backends.backend_qt5agg import (FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 
-from PyQt5.QtCore import pyqtRemoveInputHook
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
+from PyQt5.QtCore import pyqtRemoveInputHook, Qt
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QSlider, QDoubleSpinBox, QLabel
 
 class PID_Toy(QtWidgets.QMainWindow):
     def __init__(self):
@@ -99,8 +99,9 @@ class PID_Toy(QtWidgets.QMainWindow):
         #
 
         self._main = QtWidgets.QWidget()
+        #self._main.setLayout(layout)
         self.setCentralWidget(self._main)
-        layout = QtWidgets.QGridLayout(self._main)
+        layout = QtWidgets.QGridLayout(self._main, spacing=10)
 
         xs = list(range(0,x_range))
         ys = [0]*x_range
@@ -115,19 +116,57 @@ class PID_Toy(QtWidgets.QMainWindow):
             self.animate,
             fargs=(line,setpointline),
             interval=(self.timestep)*1000.0,
-            blit=True)        
+            blit=True)  
 
         canvas = FigureCanvas(fig)
-        layout.addWidget(canvas, 0, 0)
+
+        layout.addWidget(canvas, 0, 0, 1, 3) # row, column, rowSpan, columnSpan
         self.addToolBar(NavigationToolbar(canvas, self))
 
-        # button
+        # pause button
         button = QPushButton("Pause")
-        layout.addWidget(button, 2, 2)
+        layout.addWidget(button, 3, 2)
         button.clicked.connect(self.pause)
         button.show()
 
+        # Current value editor
+        self.cur_val_precision = 2
+        cur_val_min = 0
+        cur_val_max = 100
+
+        cur_val_label = QLabel()
+        cur_val_label.setText("Set Value")
+        layout.addWidget(cur_val_label, 2, 0)
+
+        # Current value slider
+        self.cur_val_slider = QSlider(Qt.Horizontal)
+        layout.addWidget(self.cur_val_slider, 3, 0)
+        self.cur_val_slider.setMinimum(cur_val_min)
+        self.cur_val_slider.setMaximum(cur_val_max*(10**self.cur_val_precision))
+        self.cur_val_slider.valueChanged.connect(self.handleCurValSliderChange)
+        self.cur_val_slider.show()
+
+        # Current value input box
+        self.cur_val_input = QDoubleSpinBox()
+        layout.addWidget(self.cur_val_input, 3, 1)
+        self.cur_val_input.setMinimum(cur_val_min)
+        self.cur_val_input.setMaximum(cur_val_max)
+        self.cur_val_input.valueChanged.connect(self.handleCurValInputChange)
+        self.cur_val_input.show()
+
+    def handleCurValSliderChange(self, value):
+        realVal = value/(10.0**self.cur_val_precision)
+        self.cur_val_input.setValue(realVal)
+        self.current_value = realVal
+
+    def handleCurValInputChange(self, value):
+        self.cur_val_slider.setValue(math.floor(value*(10**self.cur_val_precision)))
+        self.current_value = value        
+
     def pause(self, event):
+        if (self.paused):
+            # don't run this multiple times if click multiple times....
+            return
         print("paused")
         self.paused = True
         self.ani.event_source.stop()
