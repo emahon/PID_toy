@@ -31,7 +31,7 @@ from matplotlib.backends.backend_qt5agg import (FigureCanvas, NavigationToolbar2
 from matplotlib.figure import Figure
 
 from PyQt5.QtCore import pyqtRemoveInputHook, Qt
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QSlider, QDoubleSpinBox, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QSlider, QDoubleSpinBox, QLabel, QAbstractSpinBox
 
 class PID_Toy(QtWidgets.QMainWindow):
     def __init__(self):
@@ -120,14 +120,15 @@ class PID_Toy(QtWidgets.QMainWindow):
 
         canvas = FigureCanvas(fig)
 
-        layout.addWidget(canvas, 0, 0, 1, 3) # row, column, rowSpan, columnSpan
+        layout.addWidget(canvas, 0, 0, 1, 5) # row, column, rowSpan, columnSpan
         self.addToolBar(NavigationToolbar(canvas, self))
 
         # pause button
-        button = QPushButton("Pause")
-        layout.addWidget(button, 3, 2)
-        button.clicked.connect(self.pause)
-        button.show()
+        self.button = QPushButton("Pause")
+        layout.addWidget(self.button, 3, 4)
+        self.button.setCheckable(True)
+        self.button.clicked.connect(self.pause)
+        self.button.show()
 
         # Current value editor
         self.cur_val_precision = 2
@@ -143,6 +144,9 @@ class PID_Toy(QtWidgets.QMainWindow):
         layout.addWidget(self.cur_val_slider, 3, 0)
         self.cur_val_slider.setMinimum(cur_val_min)
         self.cur_val_slider.setMaximum(cur_val_max*(10**self.cur_val_precision))
+        # to-do: how to show the appropriate tick values?
+        #self.cur_val_slider.setTickPosition(QSlider.TicksBelow)
+        #self.cur_val_slider.setTickInterval(10)
         self.cur_val_slider.valueChanged.connect(self.handleCurValSliderChange)
         self.cur_val_slider.show()
 
@@ -154,18 +158,76 @@ class PID_Toy(QtWidgets.QMainWindow):
         self.cur_val_input.valueChanged.connect(self.handleCurValInputChange)
         self.cur_val_input.show()
 
+        # Setpoint editor
+        setpoint_label = QLabel()
+        setpoint_label.setText("Setpoint")
+        layout.addWidget(setpoint_label, 4, 0)
+
+        # Setpoint slider
+        self.setpoint_slider = QSlider(Qt.Horizontal)
+        layout.addWidget(self.setpoint_slider, 5, 0)
+        self.setpoint_slider.setMinimum(cur_val_min)
+        self.setpoint_slider.setMaximum(cur_val_max*(10**self.cur_val_precision))
+        #self.setpoint_slider.setTickPosition(QSlider.TicksBelow)
+        #self.setpoint_slider.setTickInterval(10)
+        self.setpoint_slider.valueChanged.connect(self.handleSetpointSliderChange)
+        self.setpoint_slider.show()
+
+        # Setpoint input box
+        self.setpoint_input = QDoubleSpinBox()
+        layout.addWidget(self.setpoint_input, 5, 1)
+        self.setpoint_input.setMinimum(cur_val_min)
+        self.setpoint_input.setMaximum(cur_val_max)
+        self.setpoint_input.valueChanged.connect(self.handleSetpointInputChange)
+        self.setpoint_input.show()
+
+        # P value editing
+        p_min = -100
+        p_max = 100
+
+        p_label = QLabel()
+        p_label.setText("P")
+        layout.addWidget(p_label, 2, 2)
+
+        # P value slider
+        self.p_slider = QSlider(Qt.Horizontal)
+        layout.addWidget(self.p_slider, 3, 2)
+        self.p_slider.show()
+
+        # P value input box
+        self.p_input = QDoubleSpinBox()
+        self.p_input.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+        layout.addWidget(self.p_input, 3, 3)
+        self.p_input.show()
+        
+
     def handleCurValSliderChange(self, value):
         realVal = value/(10.0**self.cur_val_precision)
         self.cur_val_input.setValue(realVal)
         self.current_value = realVal
+        self.curtext.set_text("Value: " + self.format.format(self.current_value))
 
     def handleCurValInputChange(self, value):
         self.cur_val_slider.setValue(math.floor(value*(10**self.cur_val_precision)))
-        self.current_value = value        
+        self.current_value = value
+        self.curtext.set_text("Value: " + self.format.format(self.current_value))
+
+    def handleSetpointSliderChange(self, value):
+        realVal = value/(10.0**self.cur_val_precision)
+        self.setpoint_input.setValue(realVal)
+        self.setpoint = realVal
+        self.setpointtext.set_text("Setpoint: " + self.format.format(self.setpoint))
+
+    def handleSetpointInputChange(self, value):
+        self.setpoint_slider.setValue(math.floor(value*(10**self.cur_val_precision)))
+        self.setpoint = value
+        self.setpointtext.set_text("Setpoint: " + self.format.format(self.setpoint))
+
+
 
     def pause(self, event):
+        self.button.setEnabled(False)
         if (self.paused):
-            # don't run this multiple times if click multiple times....
             return
         print("paused")
         self.paused = True
@@ -244,6 +306,8 @@ class PID_Toy(QtWidgets.QMainWindow):
         self.setpointtext.set_text("Setpoint: " + self.format.format(self.setpoint))
         self.curtext.set_text("Value: " + self.format.format(self.current_value))
         self.ani.event_source.start()
+        self.button.setChecked(False)
+        self.button.setEnabled(True)
 
     #https://towardsdatascience.com/animations-with-matplotlib-d96375c5442c
     #https://learn.sparkfun.com/tutorials/graph-sensor-data-with-python-and-matplotlib/speeding-up-the-plot-animation
