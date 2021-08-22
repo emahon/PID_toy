@@ -112,14 +112,16 @@ class PID_Toy(QtWidgets.QMainWindow):
         ax.set_ybound(0,100)
         ax.set_xlim(x_range,0)
 
+        print("before animation")
+
+        canvas = FigureCanvas(fig)
+        
         self.ani = animation.FuncAnimation(
             fig,
             self.animate,
             fargs=(line,setpointline),
             interval=(self.timestep)*1000.0,
             blit=True)  
-
-        canvas = FigureCanvas(fig)
 
         layout.addWidget(canvas, 0, 0, 1, 5) # row, column, rowSpan, columnSpan
         self.addToolBar(NavigationToolbar(canvas, self))
@@ -317,6 +319,7 @@ class PID_Toy(QtWidgets.QMainWindow):
         # https://github.com/emahon/PID_toy/issues/12
 
         # correction force from PID controller
+        print("blah")
 
         self.current_speed = self.current_value - self.previous_value
 
