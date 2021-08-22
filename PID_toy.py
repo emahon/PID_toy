@@ -16,6 +16,7 @@
 import math
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
+import PyQt5
 import random
 import sys
 import time
